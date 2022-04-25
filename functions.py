@@ -1,4 +1,5 @@
-from typing import List, Tuple
+from logging import exception
+from typing import List, Tuple, Dict
 import random
 from day import Day
 
@@ -29,6 +30,25 @@ def getSundaysDays(numberDays:int, starCriteria:str) -> List:
         raise ValueError('getSundaysDays - wrong argument(type)')
 
 
+def generateDaysOff(sundayDays:List, numberDays:int) -> Dict:
+    dictionaryOfDays = {}
+    limits = []
+    for day in sundayDays:
+        for i in range(day+1, day+7):
+            if i <= numberDays:
+                limits.append(i)
+
+    for days in sundayDays:
+        try:
+            dictionaryOfDays[days] = limits[:6]
+            limits = limits[6:]
+        except:
+            pass
+
+
+    return dictionaryOfDays
+
+
 def checkRange(weightRange:Tuple) -> bool:
     #function to check the range argument, if it meets the standards --- it works
     if len(weightRange) == 2:
@@ -44,7 +64,7 @@ def generateWeight(rangeM_F:Tuple, rangeSa:Tuple, rangeSu:Tuple) -> list:
         if checkRange(rangeM_F) and checkRange(rangeSa) and checkRange(rangeSu):
             if rangeM_F < rangeSa:
                 if rangeSa < rangeSu:
-                    return [random.randint(rangeM_F[0], rangeM_F[1]), random.randint(rangeSa[0], rangeSa[1]), random.randint(rangeSu[0], rangeSu[1])]
+                    return [100, 200, 300]
                 else:
                     raise ValueError('the ranges do not respect the order rangeM_F < rangeSa and rangeSa < rangeSu')
             else:
@@ -74,12 +94,12 @@ def generateDays(numberDays:int, starCriteria:str,  dailyWeight:List, sundayDays
 
                 if weekdays[counter] == 'sunday' and day in sundayDays:
                     #You have to update the weight because Sundays are worth two
-                    objectDay = Day(day=weekdays[counter], numberDay=day, weight=dailyWeight[2],  dayIsSunday=True, weightMorning=20, weightAfternoon=30)
+                    objectDay = Day(day=weekdays[counter], numberDay=day, weight=dailyWeight[2],  dayIsSunday=True, weightMorning=2, weightAfternoon=3)
                     objectDay.setWeightUpdated = objectDay.getWeight * objectDay.getWeightDaySunday
                     listDays.append(objectDay)
 
                 elif weekdays[counter] == 'saturday':
-                    objectDay = Day(day=weekdays[counter], numberDay=day, weight=dailyWeight[1], weightMorning=15, weightAfternoon=18)
+                    objectDay = Day(day=weekdays[counter], numberDay=day, weight=dailyWeight[1], weightMorning=2, weightAfternoon=3)
                     objectDay.setWeightUpdated  =  objectDay.getWeight
                     listDays.append(objectDay)
 

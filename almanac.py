@@ -1,9 +1,9 @@
-from typing import List
+from typing import List, Dict
 import random
 import pandas as pd
 
 class Almanac:
-    def __init__(self, days:List, persons:List, starCriteria:str, hoursPerWorker = 48) -> None:
+    def __init__(self, days:List, persons:List, starCriteria:str, smallAlmanac: Dict, listOfPeopleWhoDoesNotRest: List, hoursPerWorker = 48) -> None:
         self.days = days
         self.persons = persons
         self.available = []
@@ -11,7 +11,8 @@ class Almanac:
         self.weekdays = ['monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday', 'sunday']
         self.starCriteria = starCriteria
         self.hoursPerWorker = hoursPerWorker
-
+        self.smallAlmanac = smallAlmanac
+        self.listOfPeopleWhoDoesNotRest = listOfPeopleWhoDoesNotRest
 
     #funcion mas dificil
     def generateScheduleWithPeople(self):
@@ -29,7 +30,7 @@ class Almanac:
                     person.resetData()
 
             #cada dia se debe actualizar los datos para estar revisnando ----> nada
-            self.getAvailable(day=day.getNumberDay)
+            self.getAvailable(day=day.getNumberDay, nameDay=day.getDay)
 
 
             #si ya no existe nadie que no pueda mas debo romper todo esto, porque entraria en un ciclo infinito ---> listo
@@ -41,11 +42,17 @@ class Almanac:
             if len(self.available) == 1:
                 aPerson = random.choice(self.available)
                 whatSchedule = random.choice(['day','afternoon'])
-                if self.weekdays[counterWeekdays] == 'sunday':
+                if self.weekdays[counterWeekdays] == 'sunday' and aPerson not in self.listOfPeopleWhoDoesNotRest:
                     aPerson.setMustRestOneDay = True
+                    #aqui es para en que parte de la semana debe descansar
+                    #dayYouHaveToRest = random.choice(self.smallAlmanac[day.getNumberDay])
+                    #aPerson.daysOff.append({day.getDay:dayYouHaveToRest})
+                    #aPerson.setRestDay = dayYouHaveToRest
                     aPerson.setRestDay = day.getNumberDay + 1
 
                 aPerson.hoursWorked  = int(aPerson.getHoursWorked) - int(self.hoursPerWorker / 7)
+
+                aPerson.workedDays += 1
 
                 if whatSchedule == 'day':
                     day.getPointerToPersonsDay.append(aPerson)
@@ -69,7 +76,7 @@ class Almanac:
                             #bedo reiniciar los valores tanto el horario de la mañana y el horario de la tarde, tambien la clase persona que actulizo sus valores  -> listo
                             self.__resetValues(day=day)
                             counter = 0
-                            self.available = self.copy
+                            self.available += self.copy
                             self.copy = []
 
                     else:
@@ -78,11 +85,16 @@ class Almanac:
                         if whatSchedule == 'day':
                             if aPerson not in day.getPointerToPersonsDay:
                                 counter += 1
-                                if self.weekdays[counterWeekdays] == 'sunday':
+                                if self.weekdays[counterWeekdays] == 'sunday' and aPerson not in self.listOfPeopleWhoDoesNotRest:
                                     aPerson.setMustRestOneDay = True
+                                    #dayYouHaveToRest = random.choice(self.smallAlmanac[day.getNumberDay])
+                                    #aPerson.daysOff.append({day.getDay:dayYouHaveToRest})
+                                    #aPerson.setRestDay = dayYouHaveToRest
                                     aPerson.setRestDay = day.getNumberDay + 1
 
                                 aPerson.hoursWorked  = int(aPerson.getHoursWorked) + int(self.hoursPerWorker / 7)
+
+                                aPerson.workedDays += 1
 
                                 day.getPointerToPersonsDay.append(aPerson)
 
@@ -96,11 +108,16 @@ class Almanac:
                             if aPerson not in day.getPointerToPersonsAfternoon:
                                 counter += 1
 
-                                if self.weekdays[counterWeekdays] == 'sunday':
+                                if self.weekdays[counterWeekdays] == 'sunday' and aPerson not in self.listOfPeopleWhoDoesNotRest:
                                     aPerson.setMustRestOneDay = True
+                                    #dayYouHaveToRest = random.choice(self.smallAlmanac[day.getNumberDay])
+                                    #aPerson.daysOff.append({day.getDay:dayYouHaveToRest})
+                                    #aPerson.setRestDay = dayYouHaveToRest
                                     aPerson.setRestDay = day.getNumberDay + 1
 
                                 aPerson.hoursWorked  = int(aPerson.getHoursWorked) + int(self.hoursPerWorker / 7)
+
+                                aPerson.workedDays += 1
 
                                 day.getPointerToPersonsAfternoon.append(aPerson)
 
@@ -118,7 +135,7 @@ class Almanac:
             self.__totalWeightOnlyNumber():self.days
         }
 
-    def getAvailable(self, day):
+    def getAvailable(self, day, nameDay):
         #fucnion que debo revisar bien
         self.__sundaySystem(day=day)
         for person in self.persons:
@@ -126,10 +143,11 @@ class Almanac:
             if self.__deserveADayOff(person):
                 if self.__reviewHours(person):
                     #como esto se actualiza cada dia, van a ver personas que no quedaron en ese dia y van a cumplir con las condiciones y se vuelve agregar, controlar eso -->listo
-                    if person not in self.available:
-                        self.available.append(person)
+                    if self.__systemOfDaysNotToWork(person, nameDay):
+                        if self.__systemDayExcluderSystem(person):
+                            if person not in self.available:
+                                self.available.append(person)
                 else:
-                    
                     if person in self.available:
                         del self.available[self.available.index[person]]
                     
@@ -145,11 +163,23 @@ class Almanac:
 
         print(self.__countWeightScheduleWithPeople())
 
+    def __systemDayExcluderSystem(self, person):
+        #este sistema fue creado porque Franciso, Jhoana y Cris son de apoyo, es decir maximo dos dias
+        if person.workedDays > person.daysAllowedToWork and person.activateExclusiveSystem:
+            return False
+        return True
+    
+
+    def __systemOfDaysNotToWork(self, person, day):
+        #este sistema fue creado porque Julian no puede trabajar algunos dias  jueves, sabado, domingo-> Julian
+        if day not in person.getNonwWorkingDays:
+            return True
+        return False
+
     def __sundaySystem(self, day):
         #que pasa si todos dos caen un domingo y no pueden trabajar al otro dia
         for person in self.persons:
             if day > person.getRestDay:
-                #ya debe trabajar
                 person.setMustRestOneDay = False
 
     def __deserveADayOff(self, person):
@@ -170,6 +200,11 @@ class Almanac:
             else:
                 person.hoursWorked  = int(person.getHoursWorked) - int(self.hoursPerWorker / 7)
 
+            if person.workedDays == 0:
+                person.workedDays = 0
+            else:
+                person.workedDays = person.workedDays - 1
+
             person.setMustRestOneDay = False
             person.setRestDay = 0
 
@@ -179,6 +214,11 @@ class Almanac:
 
             else:
                 person.hoursWorked  = int(person.getHoursWorked) - int(self.hoursPerWorker / 7)
+
+            if person.workedDays == 0:
+                person.workedDays = 0
+            else:
+                person.workedDays = person.workedDays - 1
             
             person.setMustRestOneDay = False
             person.setRestDay = 0

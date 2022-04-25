@@ -3,7 +3,6 @@ from functions import *
 from person import Person
 from almanac import Almanac
 import sys
-
 import pandas as pd
 
 if __name__ == '__main__':
@@ -14,15 +13,15 @@ if __name__ == '__main__':
         starCriteria ->  is where the selected month starts -> sys.argv[2]
     '''   
 
-    numberDays = int(sys.argv[1])
-    starCriteria = sys.argv[2]
-    numberOperations = int(sys.argv[3])
+    #numberDays = int(sys.argv[1])
+    #starCriteria = sys.argv[2]
+    #numberOperations = int(sys.argv[3])
 
-    '''
+    
     numberDays = 31
-    starCriteria = 'saturday'
-    numberOperations = 2
-    '''
+    starCriteria = 'friday'
+    numberOperations = 2000000
+    
 
     schedules = []
 
@@ -32,9 +31,12 @@ if __name__ == '__main__':
     #people who are going to enter the schedule
 
     peopleList = [
-        Person(name='Miguel', weight=20), Person(name='Juan', weight=15), Person(name='Alejandro', weight=12), Person(name='Fran', weight=40),
-        Person(name='Jhoana', weight=45), Person(name='Javier', weight=11), Person(name='Jaime', weight=10), Person(name='Ricardo', weight=50),
-        Person(name='Ana', weight=22), Person(name='Jhon', weight=27), Person(name='Pepe', weight=33), Person(name='Jesus', weight=60)
+        Person(name='Fran', weight=4, nonwWorkingDays= ['monday', 'tuesday', 'wednesday', 'thursday', 'friday'], daysAllowedToWork=2, activateExclusiveSystem= True),
+        Person(name='Jhoana', weight=4, nonwWorkingDays= ['monday', 'tuesday', 'wednesday', 'thursday', 'friday'], daysAllowedToWork=2, activateExclusiveSystem= True), 
+        Person(name='Javier', weight=80), 
+        Person(name='Jaime', weight=70), 
+        Person(name='Cristo', weight=4, nonwWorkingDays= ['monday', 'tuesday', 'wednesday', 'thursday', 'friday'], daysAllowedToWork=2, activateExclusiveSystem= True),
+        Person(name='Julian', weight=50, nonwWorkingDays=['monday', 'tuesday', 'wednesday', 'friday'])
         ]
 
     dailyWeight = generateWeight(rangeM_F=(1,50), rangeSa=(50,70), rangeSu=(70,100))
@@ -42,8 +44,9 @@ if __name__ == '__main__':
     try:
         for i in range(numberOperations):
             sundayDays = getSundaysDays(numberDays=numberDays, starCriteria=starCriteria)
+            smallAlmanac = generateDaysOff(sundayDays=sundayDays, numberDays = numberDays)
             days = generateDays(numberDays=numberDays, starCriteria=starCriteria, dailyWeight=dailyWeight, sundayDays=sundayDays)
-            almanac = Almanac(days=days, persons=peopleList, starCriteria=starCriteria)
+            almanac = Almanac(days=days, persons=peopleList, starCriteria=starCriteria, smallAlmanac=smallAlmanac, listOfPeopleWhoDoesNotRest=[peopleList[0], peopleList[1], peopleList[4], peopleList[5]])
 
             '''
             shows the schedule without people, and shows the weight of the generated schedule without people

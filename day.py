@@ -1,5 +1,5 @@
 class Day:
-    def __init__(self,day:str, numberDay:int, weight:int, dayIsSunday:bool = False, weightMorning = 10, weightAfternoon = 12, numberPeople:int = 2, weightDaySunday = 2) -> None:
+    def __init__(self,day:str, numberDay:int, weight:int, dayIsSunday:bool = False, weightMorning = 2, weightAfternoon = 3, numberPeople:int = 2, weightDaySunday = 2) -> None:
         self.day = day 
         self.numberDay = numberDay
         self.weight = weight
